@@ -110,7 +110,7 @@ function HistoryView({ classList, todayDate, initialClassId }) {
 
       <section style={{ backgroundColor: '#262626', border: '1px solid #3d3d3d', borderRadius: '4px', padding: '24px' }}>
         <div style={{ fontSize: '16px', fontWeight: '400', color: '#ffffff', marginBottom: '20px' }}>
-          歷史封包數據快照 ({historyDate})
+          修課名單 ({historyDate})
         </div>
 
         {hasRecord && filteredClassList.length > 0 ? (

@@ -117,11 +117,19 @@ app.post('/api/save-checkin', async (req, res) => {
     const classRes = await pool.query(sqlCheckClass, [ClassId, YMD]);
     
     if (classRes.rows.length === 0) {
-      return res.status(403).json({ success: false, message: `簽到失敗：課程 ${ClassId} 於今日 (${YMD}) 並無開課點名紀錄。` });
+      return res.status(403).json({ success: false, message: `簽到失敗：課程 ${ClassId} 於 ${YMD} 並無開課點名紀錄。` });
     }
 
     const currentRecord = classRes.rows[0];
-    if (currentRecord.Present !== null || currentRecord.Absent !== null) {
+
+    const todayStr = new Date().toLocaleDateString('zh-TW', {
+      timeZone: 'Asia/Taipei',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).replace(/\//g, '-');
+
+    if (YMD !== todayStr && (currentRecord.Present !== null || currentRecord.Absent !== null)) {
       return res.status(403).json({ success: false, message: '簽到失敗：該課程點名已結束並封存歷史。' });
     }
 

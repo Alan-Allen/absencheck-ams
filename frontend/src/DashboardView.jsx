@@ -40,7 +40,7 @@ function DashboardView({
         </div>
       </div>
 
-      <div style={{ fontSize: '20px', fontWeight: '400', color: '#ffffff', marginBottom: '20px', letterSpacing: '-0.01em' }}>今日 analysis (Analytics)</div>
+      <div style={{ fontSize: '20px', fontWeight: '400', color: '#ffffff', marginBottom: '20px', letterSpacing: '-0.01em' }}>今日統計狀況</div>
 
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '32px' }}>
         <div style={{ backgroundColor: '#262626', border: '1px solid #3d3d3d', borderRadius: '4px', padding: '24px' }}>
