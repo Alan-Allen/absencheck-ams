@@ -1,34 +1,30 @@
-# AbsenCheck AMS
+# AbsenCheck AMS - 考勤管理系統
 
-AbsenCheck AMS (Attendance Management System) 是一款商用級的輕量化考勤管理系統，採用 **React (Vite) + Node.js (Express) + PostgreSQL** 的經典技術堆疊，並透過 **Docker Compose** 達成全容器化的一鍵部署。
-
-本系統核心設計圍繞於「記憶體防禦閘門」與「數據防竄改快照」兩大安全性標準，並針對 PostgreSQL 的嚴格大小寫約束進行了底層標準化校正，確保前後端大動脈在最流暢、嚴謹的雙軌分流架構下穩定運行。
+這是一款基於 React (Vite) + Node.js (Express) + PostgreSQL 開發的輕量化考勤管理系統，並透過 Docker Compose 實作全容器化部署。
 
 ---
 
-## 核心架構與防禦防線
+## 核心設計原則
 
 ### 1. 開課日誌主導防線 (classrecords)
-為了徹底解決「將當天修課名單無條件全撈出來」導致記憶體空轉塞爆的效能痛點，後端引入了嚴格的攔截閘門：
-* **無紀錄不放行**：不論是今日即時看板還是歷史查詢，只要該課程在特定日期於 `classrecords` 內沒有預先註冊的開課紀錄，後端 API 將立即攔截並阻斷，絕不盲目調取學生明細，將伺服器記憶體消耗降至最低。
-* **簽到通道鎖死**：若某門課程未於管理端或資料庫預先啟用點名，學生端便完全無法對該課程進行任何簽到。
 
-### 2. 純淨二元狀態業務邏輯
-* **取消遲到判定**：考量到資料庫目前僅記錄日期（YMD）而無詳細課表分鐘級時間，且為杜絕學生自主宣告的作弊人性，系統已全面移除遲到機制。
-* **二元狀態**：點名系統專注處理 **「出席」** 與 **「缺席」** 兩種純淨狀態。學生成功簽到一律硬性寫入為「出席」；未簽到者則透過大名單的 `LEFT JOIN` 於前端預設顯示為「缺席」。
+* **無紀錄不放行**：不論是即時看板還是歷史查詢，只要 `classrecords` 在該日期沒有開課紀錄，後端一律立即攔截並阻斷，不盲目調取學生名單明細，將記憶體消耗降至最低。
+* **權限鎖死**：若當天某門課程未預先註冊開課，學生端完全無法進行簽到。
 
-### 3. 歷史快照防竄改機制
-* **即時看板 (DashboardView)**：當天點名數據採用實時計算，學生觸發簽到時，大看板的統計卡片（應到、出席率、未簽到）會零延遲跳動同步更新。
-* **歷史日誌 (HistoryView)**：一旦點名通道結算封存（可透過 `/api/class-records/freeze` 接口手動封存或經由深夜排程自動強制快照），歷史頁面的統計數據將不再動態數人頭，而是直接讀取寫死在 `classrecords` 裡的統計欄位數值（`Present`, `Absent`），兼顧極速讀取效能並防止歷史遭惡意竄改。
+### 2. 純淨二元狀態
 
----
+* **取消遲到機制**：系統全面移除遲到判定，只專注處理「出席」與「缺席」兩種狀態。
+* **二元狀態**：學生簽到成功硬性寫入為「出席」；未簽到者透過 `LEFT JOIN` 預設顯示為「缺席」。
 
-## 資料庫與大小寫約束規範 (PostgreSQL)
+### 3. 看板與歷史分流
 
-本專案底層實體表皆為全小寫規格（如 `studentlist`、`studentrecords`、`classrecords`）。由於 PostgreSQL 對於欄位大小寫與雙引號具有嚴格約束，任何後端原生 SQL 語句（Raw SQL）在涉及學號等特定欄位比對時，必須嚴格採用完整路徑與雙引號對齊：
+* **今日即時看板 (DashboardView)**：採用實時計算，學生簽到成功後，大看板數據（應到人數、出席率、未簽到人數）隨之即時跳動與同步更新。
+* **歷史出缺席日誌 (HistoryView)**：一旦點名通道封存（透過手動或深夜排程），歷史頁面直接讀取寫死在 `classrecords` 裡的統計欄位數值（`Present`, `Absent`），確保讀取效能並防止歷史數據遭竄改。
 
-* 正確撰寫範例：`studentlist."StdNumber"`、`classrecords."ClassId"`、`classrecords."YMD"`
-* 嚴禁使用全小寫簡寫（如 `studentlist.stdnumber`），以避免引發資料庫 `500 Column does not exist` 報錯。
+### 4. 資料庫大小寫約束
+
+* 底層實體表（如 `studentlist`、`studentrecords`、`classrecords`）皆為全小寫。
+* 涉及修課名單或特定欄位比對時，原生 SQL 查詢語句嚴格採用完整路徑與雙引號對齊（如 `studentlist."StdNumber"`），避免引發 PostgreSQL 報錯。
 
 ---
 
@@ -48,3 +44,50 @@ roll_cal_system/
         ├── CheckInView.jsx  # 學生自主簽到頁面（動態過濾今日開課、無課防護）
         ├── DashboardView.jsx# 今日即時統計看板（零延遲回饋、一鍵封存歷史）
         └── HistoryView.jsx  # 歷史出缺席日誌總覽（隨日期起舞選單、快照讀取）
+
+```
+
+---
+
+## 快速開始與部署
+
+### 環境準備
+
+* 確保主機已安裝 Docker 與 Docker Compose。
+* 確保埠口 `3000` (前端) 與 `8080` (後端) 未被佔用。
+
+### 機密資料設定
+
+請在 `backend/` 目錄下建立 `.env` 檔案，用於存放資料庫連線設定：
+
+```text
+DB_USER=postgres
+DB_PASSWORD=admin1234
+DB_NAME=amsdb
+DB_HOST=ams-db
+DB_PORT=5432
+
+```
+
+*註：`backend/.env` 已加入 `.gitignore`，切勿推上 Git 倉庫。*
+
+### 啟動指令
+
+於專案根目錄執行以下指令，即可一鍵編排並啟動所有服務：
+
+```bash
+docker compose up -d --build
+
+```
+
+* **前端網頁**：`http://localhost:3000`
+* **後端 API**：`http://localhost:8080`
+
+### 依賴套件更新
+
+若修改了前後端的 `package.json`，請執行以下指令重新編排容器以更新內部的 `node_modules`：
+
+```bash
+docker compose up -d --build ams-frontend ams-backend
+
+```
