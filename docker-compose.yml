@@ -23,6 +23,8 @@ services:
       - ./backend:/app  # 掛載本地 backend 程式碼，方便即時修改免重新 build
     ports:
       - "8080:8080"
+    env_file:
+      - ./backend/.env
     command: sh -c "npm install && npm run dev"
     depends_on:
       - ams-db
