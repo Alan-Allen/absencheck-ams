@@ -1,4 +1,4 @@
-# AbsenCheck AMS - 考勤管理系統
+# AbsenCheck AMS
 
 這是一款基於 React (Vite) + Node.js (Express) + PostgreSQL 開發的輕量化考勤管理系統，並透過 Docker Compose 實作全容器化部署。
 
