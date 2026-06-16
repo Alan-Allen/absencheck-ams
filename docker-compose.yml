@@ -1,26 +1,24 @@
 services:
-  # 1. PostgreSQL 資料庫服務
+  # PostgreSQL 資料庫服務
   ams-db:
     image: postgres:latest
     container_name: ams-postgres
     restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin1234
-      POSTGRES_DB: amsdb
+    env_file:
+      - ./backend/.env
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql
 
-  # 2. Node.js Express 後端 API 服務
+  # Node.js Express 後端 API 服務
   ams-backend:
     image: node:20-alpine
     container_name: ams-node-backend
     restart: always
     working_dir: /app
     volumes:
-      - ./backend:/app  # 掛載本地 backend 程式碼，方便即時修改免重新 build
+      - ./backend:/app
     ports:
       - "8080:8080"
     env_file:
@@ -29,13 +27,13 @@ services:
     depends_on:
       - ams-db
 
-  # 3. React 前端服務
+  # React 前端服務
   ams-frontend:
-    build: ./frontend   # 指向你目前含有 Dockerfile 的 frontend 資料夾
+    build: ./frontend
     container_name: ams-react-frontend
     restart: always
     ports:
-      - "3000:3000"     # 將 React 對外映射至 3000 port
+      - "3000:3000"
     depends_on:
       - ams-backend
     volumes:
