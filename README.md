@@ -62,7 +62,7 @@ roll_cal_system/
 
 ```text
 DB_USER=postgres
-DB_PASSWORD=admin1234
+DB_PASSWORD=your_password
 DB_NAME=amsdb
 DB_HOST=ams-db
 DB_PORT=5432
